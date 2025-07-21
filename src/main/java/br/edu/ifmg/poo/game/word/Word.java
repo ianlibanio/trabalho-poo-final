@@ -1,9 +1,9 @@
 package br.edu.ifmg.poo.game.word;
 
 public class Word {
-    private final String original;
-    private final char[] letters;
-    private final boolean[] revealed;
+    private final String original; // Palavra original
+    private final char[] letters; // Letras da palavra
+    private final boolean[] revealed; // Quais letras já foram reveladas
 
     public Word(String original) {
         if (!isValidWord(original)) {
@@ -14,10 +14,12 @@ public class Word {
         this.revealed = new boolean[letters.length];
     }
 
+    // Verifica se a palavra é válida (apenas letras)
     public static boolean isValidWord(String w) {
         return w.chars().allMatch(Character::isLetter);
     }
 
+    // Revela todas as ocorrências da letra na palavra
     public boolean reveal(char letter) {
         boolean hit = false;
         for (int i = 0; i < letters.length; i++) {
@@ -29,6 +31,7 @@ public class Word {
         return hit;
     }
 
+    // Retorna a palavra mascarada (_ para letras não reveladas)
     public String mask() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < letters.length; i++) {
@@ -37,6 +40,7 @@ public class Word {
         return sb.toString();
     }
 
+    // Verifica se todas as letras foram reveladas
     public boolean isFullyRevealed() {
         for (boolean r : revealed) {
             if (!r) return false;
@@ -44,6 +48,7 @@ public class Word {
         return true;
     }
 
+    // Retorna a palavra original
     public String getOriginal() {
         return original;
     }

@@ -3,6 +3,7 @@ package br.edu.ifmg.poo.game.player;
 import java.util.List;
 import java.util.Scanner;
 
+// Jogador humano, recebe entrada pelo teclado (usado apenas em modo console)
 public class HumanPlayer extends Player {
 
     private final Scanner scanner;
@@ -12,6 +13,7 @@ public class HumanPlayer extends Player {
         this.scanner = scanner;
     }
 
+    // Solicita ao usuário uma letra que ainda não foi tentada
     @Override
     public char nextGuess(List<Character> alreadyTried) {
         char letter = 0;

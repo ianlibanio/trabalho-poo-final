@@ -23,11 +23,15 @@ import java.util.Map;
 
 public class Main extends Application {
 
+    // Lista de jogadores cadastrados
     private final List<Player> players = new ArrayList<>();
+    // Mapa de pontuação dos jogadores
     private final Map<Player, Integer> scoreboard = new HashMap<>();
+    // Último jogador que revelou a palavra
     private Player lastToReveal;
     private Stage primaryStage;
     private HangmanGame game;
+    // Índices para controlar quem escolhe e quem chuta
     private int currentChooserIndex = 0, currentGuesserIndex;
     private List<Player> guessers;
 
@@ -38,10 +42,11 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         this.primaryStage = stage;
-
+        // Exibe o menu inicial
         this.showMenu();
     }
 
+    // Exibe o menu principal do jogo
     private void showMenu() {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
@@ -54,6 +59,7 @@ public class Main extends Application {
         final Button btnScore = new Button("Ver placar");
         final Button btnExit = new Button("Sair");
 
+        // Define ações dos botões
         btnAddHuman.setOnAction(e -> showAddHuman());
         btnAddRobot.setOnAction(e -> showAddRobot());
         btnStart.setOnAction(e -> startMatch());
@@ -70,6 +76,7 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    // Tela para cadastrar jogador humano
     private void showAddHuman() {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
@@ -104,6 +111,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
     }
 
+    // Tela para cadastrar jogador robô
     private void showAddRobot() {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
@@ -135,6 +143,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
     }
 
+    // Inicia uma partida, verifica se há jogadores suficientes
     private void startMatch() {
         if (players.size() < 2) {
             showAlert("Cadastre pelo menos 2 jogadores para jogar!");
@@ -156,6 +165,7 @@ public class Main extends Application {
         this.startRound();
     }
 
+    // Inicia uma rodada, define quem escolhe e quem chuta
     private void startRound() {
         if (currentChooserIndex >= players.size()) {
             this.showScoreboard();
@@ -171,6 +181,7 @@ public class Main extends Application {
         this.currentGuesserIndex = 0;
         this.lastToReveal = null;
 
+        // Se o jogador que escolhe for robô, escolhe palavra automaticamente
         if (chooser instanceof RobotPlayer robot) {
             final String word = robot.chooseWord();
             this.showAlert("(ROBÔ) Palavra secreta escolhida. Boa sorte!");
@@ -182,6 +193,7 @@ public class Main extends Application {
         }
     }
 
+    // Tela para o jogador humano digitar a palavra secreta
     private void showWordInputScreen(Player chooser) {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
@@ -207,10 +219,12 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, 400, 180));
     }
 
+    // Exibe a tela principal do jogo da forca
     private void showGameScreen(String word, Player chooser) {
         this.showGameScreen(word, chooser, false);
     }
 
+    // Exibe a tela principal do jogo da forca, com opção de jogada automática do robô
     private void showGameScreen(String word, Player chooser, boolean autoPlayRobot) {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
@@ -224,6 +238,7 @@ public class Main extends Application {
         final Button btnGuess = new Button("Chutar");
         final Label msg = new Label();
 
+        // Desenho da forca
         final Label hangmanLabel =
                 new Label(HangmanDrawer.draw(HangmanGame.MAX_ATTEMPTS - game.getRemainingAttempts()));
         hangmanLabel.setStyle("-fx-font-family: 'monospace'; -fx-font-size: 16px; -fx-text-fill: #FFD700;");
@@ -242,6 +257,7 @@ public class Main extends Application {
             root.getChildren().add(hangmanLabel);
         }
 
+        // Atualiza os elementos da interface conforme o estado do jogo
         final Runnable updateUI = () -> {
             wordLabel.setText("Palavra: " + game.getMaskedWord());
             attemptsLabel.setText("Tentativas restantes: " + game.getRemainingAttempts());
@@ -278,10 +294,12 @@ public class Main extends Application {
         }
     }
 
+    // Retorna o nome do próximo jogador a chutar
     private String nextGuesserName() {
         return guessers.get(currentGuesserIndex).getName();
     }
 
+    // Exibe tela de fim de rodada e atualiza pontuação
     private void showEndOfRound(String word, Player chooser) {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
@@ -305,6 +323,7 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, 400, 120));
     }
 
+    // Mostra o placar dos jogadores
     private void showScoreboard() {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
@@ -326,6 +345,7 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root, 350, 200));
     }
 
+    // Exibe um alerta com mensagem
     private void showAlert(String msg) {
         final Alert alert = new Alert(Alert.AlertType.INFORMATION);
 
@@ -335,6 +355,7 @@ public class Main extends Application {
         alert.showAndWait();
     }
 
+    // Lida com o chute do jogador, seja humano ou robô
     private void handleGuess(
             String word, Player chooser, TextField guessField, Button btnGuess, Label msg, Runnable updateUI) {
         final Player currentGuesser = guessers.get(currentGuesserIndex);
@@ -380,9 +401,10 @@ public class Main extends Application {
         }
     }
 
+    // Simula jogada automática do robô
     private void autoRobotPlay(
             String word, Player chooser, TextField guessField, Button btnGuess, Label msg, Runnable updateUI) {
-        final PauseTransition pause = new PauseTransition(Duration.seconds(0.7));
+        final PauseTransition pause = new PauseTransition(Duration.seconds(1));
 
         pause.setOnFinished(ev -> handleGuess(word, chooser, guessField, btnGuess, msg, updateUI));
         pause.play();
