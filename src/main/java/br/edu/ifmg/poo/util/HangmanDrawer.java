@@ -14,5 +14,4 @@ public class HangmanDrawer {
     public static String draw(int errors) {
         return STATES[Math.min(errors, STATES.length - 1)];
     }
-
 }

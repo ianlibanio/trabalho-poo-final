@@ -14,6 +14,10 @@ public class Word {
         this.revealed = new boolean[letters.length];
     }
 
+    public static boolean isValidWord(String w) {
+        return w.chars().allMatch(Character::isLetter);
+    }
+
     public boolean reveal(char letter) {
         boolean hit = false;
         for (int i = 0; i < letters.length; i++) {
@@ -42,9 +46,5 @@ public class Word {
 
     public String getOriginal() {
         return original;
-    }
-
-    public static boolean isValidWord(String w) {
-        return w.chars().allMatch(Character::isLetter);
     }
 }

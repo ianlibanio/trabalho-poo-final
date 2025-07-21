@@ -1,13 +1,16 @@
 package br.edu.ifmg.poo.game;
 
 import br.edu.ifmg.poo.game.word.Word;
-import java.util.*;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class HangmanGame {
     public static final int MAX_ATTEMPTS = 6;
     private final Word word;
-    private int remainingAttempts;
     private final Set<Character> triedLetters;
+    private int remainingAttempts;
     private boolean gameOver;
 
     public HangmanGame(Word word) {

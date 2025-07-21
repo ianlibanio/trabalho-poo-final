@@ -6,28 +6,34 @@ import br.edu.ifmg.poo.game.player.Player;
 import br.edu.ifmg.poo.game.player.RobotPlayer;
 import br.edu.ifmg.poo.game.word.Word;
 import br.edu.ifmg.poo.util.HangmanDrawer;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Main extends Application {
-    private Player lastToReveal;
-    private Stage primaryStage;
-
-    private HangmanGame game;
-    private int currentChooserIndex = 0, currentGuesserIndex;
-
-    private List<Player> guessers;
 
     private final List<Player> players = new ArrayList<>();
     private final Map<Player, Integer> scoreboard = new HashMap<>();
+    private Player lastToReveal;
+    private Stage primaryStage;
+    private HangmanGame game;
+    private int currentChooserIndex = 0, currentGuesserIndex;
+    private List<Player> guessers;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage stage) {
@@ -39,7 +45,7 @@ public class Main extends Application {
     private void showMenu() {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
-        
+
         final Label title = new Label("Jogo da Forca");
 
         final Button btnAddHuman = new Button("Cadastrar jogador HUMANO");
@@ -218,7 +224,8 @@ public class Main extends Application {
         final Button btnGuess = new Button("Chutar");
         final Label msg = new Label();
 
-        final Label hangmanLabel = new Label(HangmanDrawer.draw(HangmanGame.MAX_ATTEMPTS - game.getRemainingAttempts()));
+        final Label hangmanLabel =
+                new Label(HangmanDrawer.draw(HangmanGame.MAX_ATTEMPTS - game.getRemainingAttempts()));
         hangmanLabel.setStyle("-fx-font-family: 'monospace'; -fx-font-size: 16px; -fx-text-fill: #FFD700;");
         hangmanLabel.setMinHeight(140); // Garante espaço para o desenho completo
         hangmanLabel.setPrefHeight(Region.USE_COMPUTED_SIZE);
@@ -258,7 +265,7 @@ public class Main extends Application {
         vezLabel.setText("Vez de: " + nextGuesserName());
         root.getChildren().addAll(info, wordLabel, attemptsLabel, triedLabel, vezLabel, guessField, btnGuess, msg);
 
-        final Scene scene = new Scene(root, 500, 450);
+        final Scene scene = new Scene(root, 500, 480);
         scene.getStylesheets().add(getClass().getResource("/hangman.css").toExternalForm());
         primaryStage.setScene(scene);
 
@@ -281,7 +288,8 @@ public class Main extends Application {
 
         final Label endMsg;
         if (game.getMaskedWord().replace(" ", "").equals(word) && lastToReveal != null) {
-            endMsg = new Label("Parabéns, " + lastToReveal.getName() + ", você adivinhou a última letra e ganhou 1 ponto!");
+            endMsg = new Label(
+                    "Parabéns, " + lastToReveal.getName() + ", você adivinhou a última letra e ganhou 1 ponto!");
             scoreboard.put(lastToReveal, scoreboard.getOrDefault(lastToReveal, 0) + 1);
         } else {
             endMsg = new Label("Fim das tentativas! A palavra era '" + word + "'.");
@@ -327,9 +335,11 @@ public class Main extends Application {
         alert.showAndWait();
     }
 
-    private void handleGuess(String word, Player chooser, TextField guessField, Button btnGuess, Label msg, Runnable updateUI) {
-        Player currentGuesser = guessers.get(currentGuesserIndex);
-        String guess;
+    private void handleGuess(
+            String word, Player chooser, TextField guessField, Button btnGuess, Label msg, Runnable updateUI) {
+        final Player currentGuesser = guessers.get(currentGuesserIndex);
+
+        final String guess;
         if (currentGuesser instanceof RobotPlayer) {
             btnGuess.setDisable(true);
             guess = String.valueOf(((RobotPlayer) currentGuesser).nextGuess(new ArrayList<>(game.getTriedLetters())));
@@ -342,35 +352,39 @@ public class Main extends Application {
                 return;
             }
         }
-        String result = game.tryGuess(guess);
+
+        final String result = game.tryGuess(guess);
+
         msg.setText(currentGuesser.getName() + ": " + result);
         guessField.clear();
         updateUI.run();
+
         if (game.isGameOver()) {
             btnGuess.setDisable(true);
+
             if (game.getMaskedWord().replace(" ", "").equals(word)) {
                 lastToReveal = currentGuesser;
             }
-            showEndOfRound(word, chooser);
+
+            this.showEndOfRound(word, chooser);
         } else {
             currentGuesserIndex = (currentGuesserIndex + 1) % guessers.size();
             updateUI.run();
+
             if (guessers.get(currentGuesserIndex) instanceof RobotPlayer) {
                 btnGuess.setDisable(true);
-                autoRobotPlay(word, chooser, guessField, btnGuess, msg, updateUI);
+                this.autoRobotPlay(word, chooser, guessField, btnGuess, msg, updateUI);
             } else {
                 btnGuess.setDisable(false);
             }
         }
     }
 
-    private void autoRobotPlay(String word, Player chooser, TextField guessField, Button btnGuess, Label msg, Runnable updateUI) {
-        PauseTransition pause = new PauseTransition(Duration.seconds(0.7));
+    private void autoRobotPlay(
+            String word, Player chooser, TextField guessField, Button btnGuess, Label msg, Runnable updateUI) {
+        final PauseTransition pause = new PauseTransition(Duration.seconds(0.7));
+
         pause.setOnFinished(ev -> handleGuess(word, chooser, guessField, btnGuess, msg, updateUI));
         pause.play();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

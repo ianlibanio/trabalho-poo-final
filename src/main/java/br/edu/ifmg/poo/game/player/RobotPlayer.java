@@ -1,6 +1,7 @@
 package br.edu.ifmg.poo.game.player;
 
-import java.util.*;
+import java.util.List;
+import java.util.Random;
 
 public class RobotPlayer extends Player {
 
