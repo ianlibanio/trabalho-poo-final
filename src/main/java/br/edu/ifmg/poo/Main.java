@@ -3,10 +3,8 @@ package br.edu.ifmg.poo;
 import br.edu.ifmg.poo.game.HangmanGame;
 import br.edu.ifmg.poo.game.player.HumanPlayer;
 import br.edu.ifmg.poo.game.player.Player;
-import br.edu.ifmg.poo.game.player.RobotPlayer;
 import br.edu.ifmg.poo.game.word.Word;
 import br.edu.ifmg.poo.util.HangmanDrawer;
-import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -14,7 +12,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,19 +51,17 @@ public class Main extends Application {
         final Label title = new Label("Jogo da Forca");
 
         final Button btnAddHuman = new Button("Cadastrar jogador HUMANO");
-        final Button btnAddRobot = new Button("Cadastrar jogador ROBÔ");
         final Button btnStart = new Button("Iniciar partida");
         final Button btnScore = new Button("Ver placar");
         final Button btnExit = new Button("Sair");
 
         // Define ações dos botões
         btnAddHuman.setOnAction(e -> showAddHuman());
-        btnAddRobot.setOnAction(e -> showAddRobot());
         btnStart.setOnAction(e -> startMatch());
         btnScore.setOnAction(e -> showScoreboard());
         btnExit.setOnAction(e -> primaryStage.close());
 
-        root.getChildren().addAll(title, btnAddHuman, btnAddRobot, btnStart, btnScore, btnExit);
+        root.getChildren().addAll(title, btnAddHuman, btnStart, btnScore, btnExit);
 
         final Scene scene = new Scene(root, 350, 300);
         scene.getStylesheets().add(getClass().getResource("/hangman.css").toExternalForm());
@@ -99,38 +94,6 @@ public class Main extends Application {
             players.add(player);
 
             msg.setText("Jogador humano " + name + " cadastrado!");
-            nameField.clear();
-        });
-
-        final Button btnBack = new Button("Voltar");
-        btnBack.setOnAction(e -> showMenu());
-        root.getChildren().addAll(label, nameField, btnAdd, msg, btnBack);
-
-        final Scene scene = new Scene(root, 350, 250);
-        scene.getStylesheets().add(getClass().getResource("/hangman.css").toExternalForm());
-        primaryStage.setScene(scene);
-    }
-
-    // Tela para cadastrar jogador robô
-    private void showAddRobot() {
-        final VBox root = new VBox(10);
-        root.setPadding(new Insets(20));
-
-        final Label label = new Label("Nome do robô (deixe vazio para padrão):");
-        final TextField nameField = new TextField();
-        final Button btnAdd = new Button("Cadastrar");
-        final Label msg = new Label();
-
-        btnAdd.setOnAction(e -> {
-            String name = nameField.getText().trim();
-            if (name.isEmpty()) name = "Bot" + (players.size() + 1);
-
-            final Player player = new RobotPlayer(name);
-
-            scoreboard.put(player, 0);
-            players.add(player);
-
-            msg.setText("Jogador robô " + name + " cadastrado!");
             nameField.clear();
         });
 
@@ -181,16 +144,7 @@ public class Main extends Application {
         this.currentGuesserIndex = 0;
         this.lastToReveal = null;
 
-        // Se o jogador que escolhe for robô, escolhe palavra automaticamente
-        if (chooser instanceof RobotPlayer robot) {
-            final String word = robot.chooseWord();
-            this.showAlert("(ROBÔ) Palavra secreta escolhida. Boa sorte!");
-
-            this.game = new HangmanGame(new Word(word));
-            this.showGameScreen(word, chooser, true);
-        } else {
-            this.showWordInputScreen(chooser);
-        }
+        this.showWordInputScreen(chooser);
     }
 
     // Tela para o jogador humano digitar a palavra secreta
@@ -221,11 +175,6 @@ public class Main extends Application {
 
     // Exibe a tela principal do jogo da forca
     private void showGameScreen(String word, Player chooser) {
-        this.showGameScreen(word, chooser, false);
-    }
-
-    // Exibe a tela principal do jogo da forca, com opção de jogada automática do robô
-    private void showGameScreen(String word, Player chooser, boolean autoPlayRobot) {
         final VBox root = new VBox(10);
         root.setPadding(new Insets(20));
 
@@ -270,10 +219,6 @@ public class Main extends Application {
 
         btnGuess.setOnAction(e -> {
             Player currentGuesser = guessers.get(currentGuesserIndex);
-            if (currentGuesser instanceof RobotPlayer) {
-                // Nunca permita clique manual quando for robô
-                return;
-            }
 
             this.handleGuess(word, chooser, guessField, btnGuess, msg, updateUI);
         });
@@ -285,13 +230,7 @@ public class Main extends Application {
         scene.getStylesheets().add(getClass().getResource("/hangman.css").toExternalForm());
         primaryStage.setScene(scene);
 
-        // Sempre que for a vez do robô, desabilite o botão e inicie jogada automática
-        if (guessers.get(currentGuesserIndex) instanceof RobotPlayer) {
-            btnGuess.setDisable(true);
-            this.autoRobotPlay(word, chooser, guessField, btnGuess, msg, updateUI);
-        } else {
-            btnGuess.setDisable(false);
-        }
+        btnGuess.setDisable(false);
     }
 
     // Retorna o nome do próximo jogador a chutar
@@ -355,24 +294,18 @@ public class Main extends Application {
         alert.showAndWait();
     }
 
-    // Lida com o chute do jogador, seja humano ou robô
+    // Lida com o chute do jogador
     private void handleGuess(
             String word, Player chooser, TextField guessField, Button btnGuess, Label msg, Runnable updateUI) {
         final Player currentGuesser = guessers.get(currentGuesserIndex);
 
         final String guess;
-        if (currentGuesser instanceof RobotPlayer) {
-            btnGuess.setDisable(true);
-            guess = String.valueOf(((RobotPlayer) currentGuesser).nextGuess(new ArrayList<>(game.getTriedLetters())));
-            msg.setText(currentGuesser.getName() + " (Robô) chutou: " + guess);
-        } else {
             btnGuess.setDisable(false);
             guess = guessField.getText().trim().toLowerCase();
             if (guess.isEmpty()) {
                 msg.setText("Digite uma letra ou palavra!");
                 return;
             }
-        }
 
         final String result = game.tryGuess(guess);
 
@@ -392,21 +325,7 @@ public class Main extends Application {
             currentGuesserIndex = (currentGuesserIndex + 1) % guessers.size();
             updateUI.run();
 
-            if (guessers.get(currentGuesserIndex) instanceof RobotPlayer) {
-                btnGuess.setDisable(true);
-                this.autoRobotPlay(word, chooser, guessField, btnGuess, msg, updateUI);
-            } else {
-                btnGuess.setDisable(false);
-            }
+            btnGuess.setDisable(false);
         }
-    }
-
-    // Simula jogada automática do robô
-    private void autoRobotPlay(
-            String word, Player chooser, TextField guessField, Button btnGuess, Label msg, Runnable updateUI) {
-        final PauseTransition pause = new PauseTransition(Duration.seconds(1));
-
-        pause.setOnFinished(ev -> handleGuess(word, chooser, guessField, btnGuess, msg, updateUI));
-        pause.play();
     }
 }
